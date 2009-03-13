@@ -1,3 +1,36 @@
+/hooks/pre-commit
+/tg-create
+/tg-create.txt
+/tg-delete
+/tg-delete.txt
+/tg-depend
+/tg-depend.txt
+/tg-info
+/tg-info.txt
+/tg-mail
+/tg-mail.txt
+/tg-patch
+/tg-patch.txt
+/tg-summary
+/tg-summary.txt
+/tg-update
+/tg-update.txt
+/tg-export
+/tg-export.txt
+/tg-import
+/tg-import.txt
+/tg-remote
+/tg-remote.txt
+/tg
+.*.swp
+
+# quilt working directory
+/.pc
+
+# .deb build stamp
+/build-stamp
+
+# Typical temporary files
 .#*
 *~
 *.orig

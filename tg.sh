@@ -3,7 +3,7 @@
 # (c) Petr Baudis <pasky@suse.cz>  2008
 # GPLv2
 
-TG_VERSION=0.7
+TG_VERSION=0.8
 
 ## Auxiliary functions
 
@@ -136,6 +136,7 @@ branch_annihilated()
 # of the whole function.
 # If recurse_deps() hits missing dependencies, it will append
 # them to space-separated $missing_deps list and skip them.
+# remote dependencies are processed if no_remotes is unset.
 recurse_deps()
 {
 	_cmd="$1"; shift
@@ -143,9 +144,9 @@ recurse_deps()
 	_depchain="$*"
 
 	_depsfile="$(mktemp -t tg-depsfile.XXXXXX)"
-	# Check also our base against remote base. Checking our head
-	# against remote head has to be done in the helper.
-	if has_remote "top-bases/$_name"; then
+	# If no_remotes is unset check also our base against remote base.
+	# Checking our head against remote head has to be done in the helper.
+	if test -z "$no_remotes" && has_remote "top-bases/$_name"; then
 		echo "refs/remotes/$base_remote/top-bases/$_name" >>"$_depsfile"
 	fi
 
@@ -268,7 +269,8 @@ do_help()
 		echo "TopGit v$TG_VERSION - A different patch queue manager"
 		echo "Usage: tg [-r REMOTE] ($cmds|help) ..."
 	elif [ -r "@cmddir@"/tg-$1 ] ; then
-		@cmddir@/tg-$1 -h || :
+		setup_pager
+		@cmddir@/tg-$1 -h 2>&1 || :
 		echo
 		if [ -r "@sharedir@/tg-$1.txt" ] ; then
 			cat "@sharedir@/tg-$1.txt"
@@ -340,8 +342,9 @@ setup_hook "pre-commit"
 ## Dispatch
 
 # We were sourced from another script for our utility functions;
-# this is set by hooks.
-[ -z "$tg__include" ] || return 0
+# this is set by hooks.  Skip the rest of the file.  A simple return doesn't
+# work as expected in every shell.  See http://bugs.debian.org/516188
+if [ -z "$tg__include" ]; then
 
 if [ "$1" = "-r" ]; then
 	shift
@@ -373,5 +376,7 @@ help|--help|-h)
 	}
 	. "@cmddir@"/tg-$cmd;;
 esac
+
+fi
 
 # vim:noet

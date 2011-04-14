@@ -1,0 +1,6 @@
+From: Gunnar Wrobel <p@rdus.de>
+Subject: [PATCH] t/bindir-override
+
+Allow to override the "bindir" setting in the Makefile.
+
+Signed-off-by: Gunnar Wrobel <p@rdus.de>

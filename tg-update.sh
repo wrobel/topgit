@@ -8,20 +8,26 @@ name=
 
 ## Parse options
 
-if [ -n "$1" ]; then
-	echo "Usage: tg [...] update" >&2
-	exit 1
-fi
+while [ -n "$1" ]; do
+	arg="$1"; shift
+	case "$arg" in
+	-*)
+		echo "Usage: tg [...] update [NAME]" >&2
+		exit 1;;
+	*)
+		[ -z "$name" ] || die "name already specified ($name)"
+		name="$arg";;
+	esac
+done
 
-
-name="$(git symbolic-ref HEAD | sed 's#^refs/\(heads\|top-bases\)/##')"
+[ -n "$name" ] || name="$(git symbolic-ref HEAD | sed 's#^refs/\(heads\|top-bases\)/##')"
 base_rev="$(git rev-parse --short --verify "refs/top-bases/$name" 2>/dev/null)" ||
 	die "not a TopGit-controlled branch"
 
 
 ## First, take care of our base
 
-depcheck="$(mktemp -t tg-depcheck.XXXXXX)"
+depcheck="$(get_temp tg-depcheck)"
 missing_deps=
 needs_update "$name" >"$depcheck" || :
 [ -z "$missing_deps" ] || die "some dependencies are missing: $missing_deps"
@@ -90,7 +96,6 @@ if [ -s "$depcheck" ]; then
 else
 	info "The base is up-to-date."
 fi
-rm "$depcheck"
 
 # Home, sweet home...
 # (We want to always switch back, in case we were on the base from failed

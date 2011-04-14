@@ -244,6 +244,10 @@ tg delete
 	only empty branch (base == head); use '-f' to remove
 	non-empty branch.
 
+	The '-f' option is also useful to force removal of a branch's base, if
+	you used 'git branch -D B' to remove the branch B, and then certain
+	TopGit commands complain, because the base of branch B is still there.
+
 	Currently, this command will _NOT_ remove the branch from
 	the dependency list in other branches. You need to take
 	care of this _manually_. This is even more complicated
@@ -267,6 +271,14 @@ tg depend
 	calling 'tg depend add'.
 
 	TODO: Subcommand for removing dependencies, obviously
+
+tg files
+~~~~~~~~
+	List files changed by the current or specified topic branch.
+
+	Options:
+	  -i		list files based on index instead of branch
+	  -w		list files based on working tree instead of branch
 
 tg info
 ~~~~~~~
@@ -304,6 +316,17 @@ tg mail
 	The '-r' parameter with msgid can be used to generate in-reply-to
 	and reference headers to an earlier mail.
 
+	Note: be careful when using this command.  It easily sends out several
+	mails.  You might want to run
+
+		git config sendemail.confirm always
+
+	to let `git send-email` ask for confirmation before sending any mail.
+
+	Options:
+	  -i		base patch generation on index instead of branch
+	  -w		base patch generation on working tree instead of branch
+
 	TODO: 'tg mail patchfile' to mail an already exported patch
 	TODO: mailing patch series
 	TODO: specifying additional options and addresses on command
@@ -316,7 +339,7 @@ tg remote
 	and 'git push' to operate on them. (Do NOT use 'git push --all'
 	for your pushes - plain 'git push' will do the right thing.)
 
-	It takes a mandatory remote name argument, and optional
+	It takes a optional remote name argument, and optional
 	'--populate' switch - use that for your origin-style remote,
 	it will seed the local topic branch system based on the
 	remote topic branches. '--populate' will also make 'tg remote'
@@ -339,6 +362,21 @@ tg summary
 	terse list of topic branch names quickly. Alternately, you can
 	pass '--graphviz' to get a dot-suitable output to draw a dependency
 	graph between the topic branches.
+
+	You can also use the --sort option to sort the branches using
+	a topological sort.  This is especially useful if each
+	TopGit-tracked topic branch depends on a single parent branch,
+	since it will then print the branches in the dependency
+	order.  In more complex scenarios, a text graph view would be
+	much more useful, but that is not yet implemented.
+
+	The --deps option outputs dependency informations between
+	branches in a machine-readable format.  Feed this to "tsort"
+	to get the output from --sort.
+
+	Options:
+	  -i		Use TopGit meta data from the index instead of branch
+	  -w		Use TopGit meta data from the working tree instead of branch
 
 	TODO: Speed up by an order of magnitude
 	TODO: Text graph view
@@ -461,12 +499,14 @@ tg import
 
 tg update
 ~~~~~~~~~
-	Update the current topic branch wrt. changes in the branches
-	it depends on and remote branches.
+	Update the current or specified topic branch wrt. changes in the
+	branches it depends on and remote branches.
 	This is performed in two phases - first,
 	changes within the dependencies are merged to the base,
 	then the base is merged into the topic branch.
 	The output will guide you in case of conflicts.
+
+	After the update the current branch is the specified one.
 
 	In case your dependencies are not up-to-date, tg update
 	will first recurse into them and update these.
@@ -486,8 +526,37 @@ tg push
 	repository.  By default the remote gets all dependencies
 	(both tgish and non-tgish) and bases pushed to.
 
-TODO: tg rename
+tg base
+~~~~~~~
+	Prints the base commit of the current topic branch.  Silently
+	exits with exit code 1 if you are not working on a TopGit
+	branch.
 
+tg log
+~~~~~~
+	Prints the git log of the named topgit branch.
+
+	Note: if you have merged changes from a different repository, this
+	command might not list all interesting commits.
+
+tg prev
+~~~~~~~
+	Outputs the direct dependencies for the current or named patch.
+
+	Options:
+	  -i		show dependencies based on index instead of branch
+	  -w		show dependencies based on working tree instead of branch
+
+tg next
+~~~~~~~
+	Outputs all patches which directly depend on the current or
+	named patch.
+
+	Options:
+	  -i		show dependencies based on index instead of branch
+	  -w		show dependencies based on working tree instead of branch
+
+TODO: tg rename
 
 IMPLEMENTATION
 --------------
@@ -585,3 +654,13 @@ All commands by default refer to the remote that 'tg remote --populate'
 was called on the last time ('topgit.remote' configuration variable). You can
 manually run any command with a different base remote by passing '-r REMOTE'
 _before_ the subcommand name.
+
+
+POINTERS
+--------
+
+The following references are useful to understand the development of topgit and
+its subcommands.
+
+tg depend:
+  http://lists-archives.org/git/688698-add-list-and-rm-sub-commands-to-tg-depend.html

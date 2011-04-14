@@ -20,7 +20,8 @@ tg_util
 if head_=$(git symbolic-ref -q HEAD); then
 	case "$head_" in
 		refs/heads/*)
-			git rev-parse -q --verify "${head_/refs\/heads\//refs\/top-bases\//}" >/dev/null || exit 0;;
+			head_="${head_#refs/heads/}"
+			git rev-parse -q --verify "refs/top-bases/$head_" >/dev/null || exit 0;;
 		*)
 			exit 0;;
 	esac

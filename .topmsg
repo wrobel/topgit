@@ -1,0 +1,6 @@
+From: Gunnar Wrobel <p@rdus.de>
+Subject: [PATCH] t/topgit-patch-log
+
+Append a commit log to each exported patch.
+
+Signed-off-by: Gunnar Wrobel <p@rdus.de>

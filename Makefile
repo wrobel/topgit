@@ -1,5 +1,5 @@
 prefix ?= $(HOME)
-bindir := $(prefix)/bin
+bindir ?= $(prefix)/bin
 cmddir := $(prefix)/libexec/topgit
 sharedir := $(prefix)/share/topgit
 hooksdir := $(cmddir)/hooks
